@@ -324,10 +324,6 @@ impl<'a> BitStreamRust<'a> {
     pub fn read_exp_golomb(&mut self) -> Result<i64, BitstreamError> {
         let res = self.read_exp_golomb_unsigned()? as i64;
 
-        // The following function might truncate when res+1 overflows
-        // res = (res+1)/2 * (res % 2 ? 1 : -1);
-        // Use this:
-        // C: res = (res / 2 + (res % 2 ? 1 : 0)) * (res % 2 ? 1 : -1);
         let result =
             (res / 2 + if res % 2 != 0 { 1 } else { 0 }) * if res % 2 != 0 { 1 } else { -1 };
 
@@ -341,9 +337,6 @@ impl<'a> BitStreamRust<'a> {
         if bnum == 0 {
             return Ok(0);
         }
-
-        // C: return (0xFFFFFFFFFFFFFFFFULL << bnum) | res;
-        // Sign extend by filling upper bits with 1s
         let result = (0xFFFFFFFFFFFFFFFFu64 << bnum) | res;
 
         Ok(result as i64)
